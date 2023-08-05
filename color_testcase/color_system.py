@@ -57,9 +57,7 @@ class ColourSystem:
 
         By default, fractional rgb components are returned; if
         out_fmt='html', the HTML hex string '#rrggbb' is returned.
-
         """
-
         rgb = self.T.dot(xyz)
         if np.any(rgb < 0):
             # We're not in the RGB gamut: approximate by desaturating
@@ -78,9 +76,7 @@ class ColourSystem:
 
         The spectrum must be on the same grid of points as the colour-matching
         function, self.cmf: 380-780 nm in 5 nm steps.
-
         """
-
         xyz = np.sum(spec[:, np.newaxis] * self.cmf, axis=0)
         den = np.sum(xyz)
         if den == 0.:
