@@ -13,6 +13,8 @@ SPEC_WIDTH = DEFAULT_SCREEN_SIZE[0] - 300
 SPEC_HEIGHT = DEFAULT_SCREEN_SIZE[1] - 100
 PADDING_LEFT = 50
 PADDING_TOP = (DEFAULT_SCREEN_SIZE[1] - SPEC_HEIGHT) // 2
+WHITE_BORDER_SIZE = 10
+COLOR_CHANGE_AMOUNT = 0.01
 
 
 def gaussian(n, sigma, m):
@@ -79,13 +81,17 @@ class Main:
 
         # render color
         color = (self.cs.spec_to_rgb(self.spec) * 255).astype(int)
+        pg.draw.rect(
+            self.screen, pg.Color(255, 255, 255),
+            pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50 + 60, 200 - WHITE_BORDER_SIZE, 60 + WHITE_BORDER_SIZE, 120 + 2 * WHITE_BORDER_SIZE)
+        )
         pg.draw.rect(self.screen, color, pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50, 200, 120, 120))
 
         font = self.render_font.render(
             'RGB: ({}, {}, {})'.format(color[0], color[1], color[2]),
             True, pg.Color(220, 220, 220), pg.Color(0, 0, 0, 0)
         )
-        self.screen.blit(font, (SPEC_WIDTH + PADDING_LEFT + 50, 200+120+20))
+        self.screen.blit(font, (SPEC_WIDTH + PADDING_LEFT + 50, 200+120+40))
 
         pg.display.flip()
 
@@ -114,6 +120,8 @@ class Main:
                 else:
                     freq = int(text) * 1000
                 self.spec = normed(planck(self.lam, freq))
+            elif text == 's':
+                self.spec = normed(planck(self.lam, 6600))
             elif text == 'c':
                 self.spec = normed(gaussian(self.spec_width, 0.2, -0.43))
                 self.gauss_pos = -0.43
@@ -134,10 +142,10 @@ class Main:
                 self.spec = normed(gaussian(self.spec_width, 0.2, -0.74))
                 self.gauss_pos = -0.74
             elif text == '+':
-                self.gauss_pos = min(self.gauss_pos + 0.02, 1)
+                self.gauss_pos = min(self.gauss_pos + COLOR_CHANGE_AMOUNT, 1)
                 self.spec = normed(gaussian(self.spec_width, 0.2, self.gauss_pos))
             elif text == '-':
-                self.gauss_pos = max(self.gauss_pos - 0.02, -1)
+                self.gauss_pos = max(self.gauss_pos - COLOR_CHANGE_AMOUNT, -1)
                 self.spec = normed(gaussian(self.spec_width, 0.2, self.gauss_pos))
             self.update_needed = True
         elif event.type == pg.KEYDOWN:
