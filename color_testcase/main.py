@@ -36,6 +36,7 @@ class Main:
         self.spec_width = len(self.lam)
         self.spec = normed(planck(self.lam, 6000))
         self.update_needed = False
+        self.gauss_pos = 0
 
         self.pressed = False
 
@@ -105,36 +106,53 @@ class Main:
                 self.set_bin()
         elif event.type in (pg.WINDOWENTER, pg.WINDOWSHOWN, pg.WINDOWFOCUSGAINED):
             self.update_needed = True
-        elif event.type == pg.KEYDOWN:
-            unicode = event.unicode.strip()
-            if unicode and unicode in '3456789':
-                freq = int(unicode) * 1000
+        elif event.type == pg.TEXTINPUT:
+            text = event.text.strip()
+            if text and text in '1234567890':
+                if text == '0':
+                    freq = 10000
+                else:
+                    freq = int(text) * 1000
                 self.spec = normed(planck(self.lam, freq))
-            elif unicode == 'c':
+            elif text == 'c':
                 self.spec = normed(gaussian(self.spec_width, 0.2, -0.43))
-            elif unicode == 'y':
+                self.gauss_pos = -0.43
+            elif text == 'y':
                 self.spec = normed(gaussian(self.spec_width, 0.2, -0.05))
-            elif unicode == 'm':
+                self.gauss_pos = -0.05
+            elif text == 'm':
                 self.spec = normed(gaussian(self.spec_width, 0.2, -1))
                 self.spec += normed(gaussian(self.spec_width, 0.2, 0.6))
-            elif unicode == 'r':
-                self.spec = normed(gaussian(self.spec_width, 0.2, 0.3))
-            elif unicode == 'g':
+                self.gauss_pos = 0.6
+            elif text == 'r':
+                self.spec = normed(gaussian(self.spec_width, 0.2, 0.44))
+                self.gauss_pos = 0.44
+            elif text == 'g':
                 self.spec = normed(gaussian(self.spec_width, 0.1, -0.17))
-            elif unicode == 'b':
-                self.spec = normed(gaussian(self.spec_width, 0.2, -0.7))
-            elif event.key == 27:
-                self.running = False
+                self.gauss_pos = -0.17
+            elif text == 'b':
+                self.spec = normed(gaussian(self.spec_width, 0.2, -0.74))
+                self.gauss_pos = -0.74
+            elif text == '+':
+                self.gauss_pos = min(self.gauss_pos + 0.02, 1)
+                self.spec = normed(gaussian(self.spec_width, 0.2, self.gauss_pos))
+            elif text == '-':
+                self.gauss_pos = max(self.gauss_pos - 0.02, -1)
+                self.spec = normed(gaussian(self.spec_width, 0.2, self.gauss_pos))
             self.update_needed = True
+        elif event.type == pg.KEYDOWN:
+            if event.key == 27:
+                self.running = False
 
     def set_bin(self):
         mouse_pos = np.array(pg.mouse.get_pos())
         if PADDING_LEFT <= mouse_pos[0] < PADDING_LEFT + SPEC_WIDTH:
-            if PADDING_TOP <= mouse_pos[1] < PADDING_TOP + SPEC_HEIGHT:
-                spec_index = int((mouse_pos[0] - PADDING_LEFT) / SPEC_WIDTH * len(self.spec))
-                spec_index = min(spec_index, len(self.spec)-1)
-                height = 1 - (mouse_pos[1] - PADDING_TOP) / SPEC_HEIGHT
-                self.spec[spec_index] = height
+            # if PADDING_TOP <= mouse_pos[1] < PADDING_TOP + SPEC_HEIGHT:
+            spec_index = int((mouse_pos[0] - PADDING_LEFT) / SPEC_WIDTH * len(self.spec))
+            spec_index = min(spec_index, len(self.spec)-1)
+            height = 1 - (mouse_pos[1] - PADDING_TOP) / SPEC_HEIGHT
+            height = min(max(height, 0), 1)
+            self.spec[spec_index] = height
 
         self.update_needed = True
 
