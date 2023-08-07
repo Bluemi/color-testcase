@@ -28,6 +28,8 @@ class Main:
     def __init__(self):
         pg.init()
         self.screen = pg.display.set_mode(DEFAULT_SCREEN_SIZE)
+        self.render_font = pg.font.Font(pg.font.get_default_font(), 18)
+
         self.running = True
         self.cs = cs_srgb
         self.lam = np.arange(380., 781., 5)
@@ -78,6 +80,12 @@ class Main:
         color = (self.cs.spec_to_rgb(self.spec) * 255).astype(int)
         pg.draw.rect(self.screen, color, pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50, 200, 120, 120))
 
+        font = self.render_font.render(
+            'RGB: ({}, {}, {})'.format(color[0], color[1], color[2]),
+            True, pg.Color(220, 220, 220), pg.Color(0, 0, 0, 0)
+        )
+        self.screen.blit(font, (SPEC_WIDTH + PADDING_LEFT + 50, 200+120+20))
+
         pg.display.flip()
 
     def handle_events(self, events):
@@ -112,9 +120,11 @@ class Main:
             elif unicode == 'r':
                 self.spec = normed(gaussian(self.spec_width, 0.2, 0.3))
             elif unicode == 'g':
-                self.spec = normed(gaussian(self.spec_width, 0.2, -0.14))
+                self.spec = normed(gaussian(self.spec_width, 0.1, -0.17))
             elif unicode == 'b':
                 self.spec = normed(gaussian(self.spec_width, 0.2, -0.7))
+            elif event.key == 27:
+                self.running = False
             self.update_needed = True
 
     def set_bin(self):
