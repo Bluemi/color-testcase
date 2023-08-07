@@ -4,7 +4,7 @@
 import numpy as np
 import pygame as pg
 
-from color_system import cs_hdtv, cs_srgb, cs_smpte
+from color_system import cs_srgb
 from black_bodies import planck
 
 
@@ -15,20 +15,34 @@ PADDING_LEFT = 50
 PADDING_TOP = (DEFAULT_SCREEN_SIZE[1] - SPEC_HEIGHT) // 2
 
 
+def gaussian(n, sigma, m):
+    x = np.linspace(-1, 1, n)
+    return 1 / np.sqrt(2 * np.pi * sigma ** 2) * np.exp(-((x - m)**2 / (2 * sigma**2)))
+
+
+def normed(spec):
+    return spec / np.max(spec)
+
+
 class Main:
     def __init__(self):
         pg.init()
         self.screen = pg.display.set_mode(DEFAULT_SCREEN_SIZE)
         self.running = True
-        # self.cs = cs_hdtv
         self.cs = cs_srgb
-        # self.cs = cs_smpte
         self.lam = np.arange(380., 781., 5)
-        self.spec = planck(self.lam, 6000)
-        self.spec_max = np.max(self.spec) * 4
+        self.spec_width = len(self.lam)
+        self.spec = normed(planck(self.lam, 6000))
         self.update_needed = False
 
         self.pressed = False
+
+        self.colors = []
+        for i in range(self.spec_width):
+            spec = np.zeros(self.spec_width)
+            spec[i] = 1
+            color = (self.cs.spec_to_rgb(spec) * 255).astype(int)
+            self.colors.append(pg.Color(color))
 
     def run(self):
         self.render()
@@ -51,11 +65,8 @@ class Main:
         left_bin_xpos = PADDING_LEFT
         for i, spec_bin in enumerate(self.spec):
             right_bin_xpos = PADDING_LEFT + (i+1) / len(self.spec) * SPEC_WIDTH
-            new_spec = np.zeros(len(self.spec))
-            new_spec[i] = self.spec[i]
-            color = (self.cs.spec_to_rgb(new_spec) * 255).astype(int)
-            color = pg.Color(color)  # TODO: precompute colors
-            bin_height = spec_bin / self.spec_max * SPEC_HEIGHT
+            color = self.colors[i]
+            bin_height = spec_bin * SPEC_HEIGHT
             bottom = DEFAULT_SCREEN_SIZE[1] - PADDING_TOP
             top = bottom - bin_height
             rect = pg.Rect(left_bin_xpos, top, right_bin_xpos - left_bin_xpos + 1, bin_height)
@@ -88,9 +99,22 @@ class Main:
             self.update_needed = True
         elif event.type == pg.KEYDOWN:
             unicode = event.unicode.strip()
-            if unicode and unicode in '4567':
+            if unicode and unicode in '3456789':
                 freq = int(unicode) * 1000
-                self.spec = planck(self.lam, freq)
+                self.spec = normed(planck(self.lam, freq))
+            elif unicode == 'c':
+                self.spec = normed(gaussian(self.spec_width, 0.2, -0.43))
+            elif unicode == 'y':
+                self.spec = normed(gaussian(self.spec_width, 0.2, -0.05))
+            elif unicode == 'm':
+                self.spec = normed(gaussian(self.spec_width, 0.2, -1))
+                self.spec += normed(gaussian(self.spec_width, 0.2, 0.6))
+            elif unicode == 'r':
+                self.spec = normed(gaussian(self.spec_width, 0.2, 0.3))
+            elif unicode == 'g':
+                self.spec = normed(gaussian(self.spec_width, 0.2, -0.14))
+            elif unicode == 'b':
+                self.spec = normed(gaussian(self.spec_width, 0.2, -0.7))
             self.update_needed = True
 
     def set_bin(self):
@@ -99,7 +123,7 @@ class Main:
             if PADDING_TOP <= mouse_pos[1] < PADDING_TOP + SPEC_HEIGHT:
                 spec_index = int((mouse_pos[0] - PADDING_LEFT) / SPEC_WIDTH * len(self.spec))
                 spec_index = min(spec_index, len(self.spec)-1)
-                height = (1 - (mouse_pos[1] - PADDING_TOP) / SPEC_HEIGHT) * self.spec_max
+                height = 1 - (mouse_pos[1] - PADDING_TOP) / SPEC_HEIGHT
                 self.spec[spec_index] = height
 
         self.update_needed = True
