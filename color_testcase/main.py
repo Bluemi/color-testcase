@@ -42,6 +42,7 @@ class Main:
         self.gauss_pos = 0
         self.gauss_filter_pos = 0
         self.use_filter = False
+        self.normalize_brightness = False
 
         self.pressed = False
 
@@ -49,7 +50,7 @@ class Main:
         for i in range(self.spec_width):
             spec = np.zeros(self.spec_width)
             spec[i] = 1
-            color = (self.cs.spec_to_rgb(spec) * 255).astype(int)
+            color = (self.cs.spec_to_rgb(spec, normalize=True) * 255).astype(int)
             self.colors.append(pg.Color(color))
 
     def run(self):
@@ -105,7 +106,8 @@ class Main:
 
         # render color
         spec = self.spec * self.filter if self.use_filter else self.spec
-        color = (self.cs.spec_to_rgb(spec) * 255).astype(int)
+        color = self.cs.spec_to_rgb(spec, normalize=self.normalize_brightness) * 255
+        color = np.minimum(color / (1 if self.normalize_brightness else 32), 255).astype(int)
         pg.draw.rect(
             self.screen, pg.Color(255, 255, 255),
             pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50 + 60, 200 - WHITE_BORDER_SIZE, 60 + WHITE_BORDER_SIZE, 120 + 2 * WHITE_BORDER_SIZE)
@@ -117,6 +119,11 @@ class Main:
             True, pg.Color(220, 220, 220), pg.Color(0, 0, 0, 0)
         )
         self.screen.blit(font, (SPEC_WIDTH + PADDING_LEFT + 50, 200+120+40))
+        normalize_font = self.render_font.render(
+            'normalized' if self.normalize_brightness else 'not normalized',
+            True, pg.Color(220, 220, 220), pg.Color(0, 0, 0, 0)
+        )
+        self.screen.blit(normalize_font, (SPEC_WIDTH + PADDING_LEFT + 50, 200+120+70))
 
         pg.display.flip()
 
@@ -141,6 +148,8 @@ class Main:
             text = event.text.strip()
             if text == 'f':
                 self.use_filter = not self.use_filter
+            if text == 'n':
+                self.normalize_brightness = not self.normalize_brightness
             # modify spec
             elif text and text in '1234567890':
                 if text == '0':

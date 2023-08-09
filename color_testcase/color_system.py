@@ -11,7 +11,6 @@ def xyz_from_xy(x, y):
 
 def rgb_to_hex(rgb):
     """Convert from fractional rgb values to HTML-style hex string."""
-
     hex_rgb = (255 * rgb).astype(int)
     return '#{:02x}{:02x}{:02x}'.format(*hex_rgb)
 
@@ -24,19 +23,16 @@ class ColourSystem:
 
     TODO: Implement gamma correction
     """
-
     # The CIE colour matching function for 380 - 780 nm in 5 nm intervals
     cmf = np.loadtxt('cie-cmf.txt', usecols=(1, 2, 3))
 
     def __init__(self, red, green, blue, white):
-        """Initialise the ColourSystem object.
-
+        """
+        Initialise the ColourSystem object.
         Pass vectors (ie NumPy arrays of shape (3,)) for each of the
         red, green, blue  chromaticities and the white illuminant
         defining the colour system.
-
         """
-
         # Chromaticities
         self.red, self.green, self.blue = red, green, blue
         self.white = white
@@ -48,8 +44,9 @@ class ColourSystem:
         # xyz -> rgb transformation matrix
         self.T = self.MI / self.wscale[:, np.newaxis]
 
-    def xyz_to_rgb(self, xyz, out_fmt=None):
-        """Transform from xyz to rgb representation of colour.
+    def xyz_to_rgb(self, xyz, out_fmt=None, normalize=False):
+        """
+        Transform from xyz to rgb representation of colour.
 
         The output rgb components are normalized on their maximum
         value. If xyz is out the rgb gamut, it is desaturated until it
@@ -63,7 +60,7 @@ class ColourSystem:
             # We're not in the RGB gamut: approximate by desaturating
             w = - np.min(rgb)
             rgb += w
-        if not np.all(rgb == 0):
+        if normalize and not np.all(rgb == 0):
             # Normalize the rgb vector
             rgb /= np.max(rgb)
 
@@ -71,23 +68,25 @@ class ColourSystem:
             return rgb_to_hex(rgb)
         return rgb
 
-    def spec_to_xyz(self, spec):
-        """Convert a spectrum to a xyz point.
+    def spec_to_xyz(self, spec, normalize):
+        """
+        Convert a spectrum to a xyz point.
 
         The spectrum must be on the same grid of points as the colour-matching
         function, self.cmf: 380-780 nm in 5 nm steps.
         """
         xyz = np.sum(spec[:, np.newaxis] * self.cmf, axis=0)
-        den = np.sum(xyz)
+        den = 1.0
+        if normalize:
+            den = np.sum(xyz)
         if den == 0.:
             return xyz
         return xyz / den
 
-    def spec_to_rgb(self, spec, out_fmt=None):
+    def spec_to_rgb(self, spec, out_fmt=None, normalize=False):
         """Convert a spectrum to a rgb value."""
-
-        xyz = self.spec_to_xyz(spec)
-        return self.xyz_to_rgb(xyz, out_fmt)
+        xyz = self.spec_to_xyz(spec, normalize)
+        return self.xyz_to_rgb(xyz, out_fmt, normalize=normalize)
 
 
 illuminant_D65 = xyz_from_xy(0.3127, 0.3291)
