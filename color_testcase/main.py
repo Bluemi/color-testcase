@@ -166,8 +166,8 @@ class Main:
                 self.spec = normed(gaussian(self.spec_width, 0.2, -0.05))
                 self.gauss_pos = -0.05
             elif text == 'm':
-                self.spec = normed(gaussian(self.spec_width, 0.2, -1))
-                self.spec += normed(gaussian(self.spec_width, 0.2, 0.6))
+                self.spec = normed(gaussian(self.spec_width, 0.2, -0.7))
+                self.spec += normed(gaussian(self.spec_width, 0.2, 0.4))
                 self.gauss_pos = 0.6
             elif text == 'r':
                 self.spec = normed(gaussian(self.spec_width, 0.2, 0.44))
@@ -197,8 +197,8 @@ class Main:
                 self.filter = normed(gaussian(self.spec_width, 0.2, -0.05))
                 self.gauss_filter_pos = -0.05
             elif text == 'M':
-                self.filter = normed(gaussian(self.spec_width, 0.2, -1))
-                self.filter += normed(gaussian(self.spec_width, 0.2, 0.6))
+                self.filter = normed(gaussian(self.spec_width, 0.2, -0.7))
+                self.filter += normed(gaussian(self.spec_width, 0.2, 0.4))
                 self.gauss_filter_pos = 0.6
             elif text == 'R':
                 self.filter = normed(gaussian(self.spec_width, 0.2, 0.44))
