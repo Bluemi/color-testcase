@@ -37,8 +37,11 @@ class Main:
         self.lam = np.arange(380., 781., 5)
         self.spec_width = len(self.lam)
         self.spec = normed(planck(self.lam, 6000))
+        self.filter = normed(gaussian(self.spec_width, 0.2, 0.0))
         self.update_needed = False
         self.gauss_pos = 0
+        self.gauss_filter_pos = 0
+        self.use_filter = False
 
         self.pressed = False
 
@@ -64,13 +67,11 @@ class Main:
 
         pg.quit()
 
-    def render(self):
-        self.screen.fill(pg.Color(0, 0, 0))
-        # render spec
+    def render_spec(self, spec, color_factor=1.0):
         left_bin_xpos = PADDING_LEFT
-        for i, spec_bin in enumerate(self.spec):
-            right_bin_xpos = PADDING_LEFT + (i+1) / len(self.spec) * SPEC_WIDTH
-            color = self.colors[i]
+        for i, spec_bin in enumerate(spec):
+            right_bin_xpos = PADDING_LEFT + (i+1) / len(spec) * SPEC_WIDTH
+            color = pg.Color([int(c*color_factor) for c in self.colors[i]])
             bin_height = spec_bin * SPEC_HEIGHT
             bottom = DEFAULT_SCREEN_SIZE[1] - PADDING_TOP
             top = bottom - bin_height
@@ -79,8 +80,32 @@ class Main:
 
             left_bin_xpos = right_bin_xpos
 
+    def render(self):
+        self.screen.fill(pg.Color(0, 0, 0))
+
+        # render spec
+        color_factor = 0.5 if self.use_filter else 1.0
+        self.render_spec(self.spec, color_factor)
+
+        if self.use_filter:
+            # render filtered spec
+            self.render_spec(self.spec * self.filter)
+            # render filter
+            left_bin_xpos = PADDING_LEFT
+            for i, filter_bin in enumerate(self.filter):
+                right_bin_xpos = PADDING_LEFT + (i+1) / len(self.spec) * SPEC_WIDTH
+                color = pg.Color(255, 255, 255)  # - self.colors[i]
+                bin_height = filter_bin * SPEC_HEIGHT
+                bottom = DEFAULT_SCREEN_SIZE[1] - PADDING_TOP
+                top = bottom - bin_height
+                pg.draw.line(self.screen, color, (left_bin_xpos, top), (right_bin_xpos, top))
+                pg.draw.line(self.screen, pg.Color(0, 0, 0), (left_bin_xpos, top-1), (right_bin_xpos, top-1))
+
+                left_bin_xpos = right_bin_xpos
+
         # render color
-        color = (self.cs.spec_to_rgb(self.spec) * 255).astype(int)
+        spec = self.spec * self.filter if self.use_filter else self.spec
+        color = (self.cs.spec_to_rgb(spec) * 255).astype(int)
         pg.draw.rect(
             self.screen, pg.Color(255, 255, 255),
             pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50 + 60, 200 - WHITE_BORDER_SIZE, 60 + WHITE_BORDER_SIZE, 120 + 2 * WHITE_BORDER_SIZE)
@@ -114,7 +139,10 @@ class Main:
             self.update_needed = True
         elif event.type == pg.TEXTINPUT:
             text = event.text.strip()
-            if text and text in '1234567890':
+            if text == 'f':
+                self.use_filter = not self.use_filter
+            # modify spec
+            elif text and text in '1234567890':
                 if text == '0':
                     freq = 10000
                 else:
@@ -142,11 +170,42 @@ class Main:
                 self.spec = normed(gaussian(self.spec_width, 0.2, -0.74))
                 self.gauss_pos = -0.74
             elif text == '+':
-                self.gauss_pos = min(self.gauss_pos + COLOR_CHANGE_AMOUNT, 1)
+                self.gauss_pos = min(self.gauss_pos + COLOR_CHANGE_AMOUNT, 1.5)
                 self.spec = normed(gaussian(self.spec_width, 0.2, self.gauss_pos))
             elif text == '-':
-                self.gauss_pos = max(self.gauss_pos - COLOR_CHANGE_AMOUNT, -1)
+                self.gauss_pos = max(self.gauss_pos - COLOR_CHANGE_AMOUNT, -1.5)
                 self.spec = normed(gaussian(self.spec_width, 0.2, self.gauss_pos))
+            # modify filter
+            elif text and text in '!"§$%&/()=':
+                freq = np.arange(1, 11)['!"§$%&/()='.index(text)] * 1000
+                self.filter = normed(planck(self.lam, freq))
+            elif text == 'S':
+                self.filter = normed(planck(self.lam, 6600))
+            elif text == 'C':
+                self.filter = normed(gaussian(self.spec_width, 0.2, -0.43))
+                self.gauss_filter_pos = -0.43
+            elif text == 'Y':
+                self.filter = normed(gaussian(self.spec_width, 0.2, -0.05))
+                self.gauss_filter_pos = -0.05
+            elif text == 'M':
+                self.filter = normed(gaussian(self.spec_width, 0.2, -1))
+                self.filter += normed(gaussian(self.spec_width, 0.2, 0.6))
+                self.gauss_filter_pos = 0.6
+            elif text == 'R':
+                self.filter = normed(gaussian(self.spec_width, 0.2, 0.44))
+                self.gauss_filter_pos = 0.44
+            elif text == 'G':
+                self.filter = normed(gaussian(self.spec_width, 0.2, -0.17))
+                self.gauss_filter_pos = -0.17
+            elif text == 'B':
+                self.filter = normed(gaussian(self.spec_width, 0.2, -0.74))
+                self.gauss_filter_pos = -0.74
+            elif text == '*':
+                self.gauss_filter_pos = min(self.gauss_filter_pos + COLOR_CHANGE_AMOUNT, 1.5)
+                self.filter = normed(gaussian(self.spec_width, 0.2, self.gauss_filter_pos))
+            elif text == '_':
+                self.gauss_filter_pos = max(self.gauss_filter_pos - COLOR_CHANGE_AMOUNT, -1.5)
+                self.filter = normed(gaussian(self.spec_width, 0.2, self.gauss_filter_pos))
             self.update_needed = True
         elif event.type == pg.KEYDOWN:
             if event.key == 27:
