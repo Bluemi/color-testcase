@@ -51,6 +51,7 @@ class Main:
             spec = np.zeros(self.spec_width)
             spec[i] = 1
             color = (self.cs.spec_to_rgb(spec, normalize=True) * 255).astype(int)
+            # color = np.minimum(color / 8, 255)
             self.colors.append(pg.Color(color))
 
     def run(self):
