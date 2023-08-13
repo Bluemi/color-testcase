@@ -43,7 +43,7 @@ class Main:
         self.gauss_filter_pos = 0
         self.use_filter = False
         self.normalize_brightness = False
-        self.normalize_spec_brightness = True
+        self.normalize_spec_brightness = False
 
         self.pressed = False
 
@@ -177,6 +177,8 @@ class Main:
                 self.spec = normed(gaussian(self.spec_width, 0.2, -0.7))
                 self.spec += normed(gaussian(self.spec_width, 0.2, 0.4))
                 self.gauss_pos = 0.4
+            elif text == 'k':
+                self.spec = np.zeros(self.spec_width)
             elif text == 'r':
                 self.spec = normed(gaussian(self.spec_width, 0.2, 0.44))
                 self.gauss_pos = 0.44
@@ -208,6 +210,8 @@ class Main:
                 self.filter = normed(gaussian(self.spec_width, 0.2, -0.7))
                 self.filter += normed(gaussian(self.spec_width, 0.2, 0.4))
                 self.gauss_filter_pos = 0.4
+            elif text == 'K':
+                self.filter = np.zeros(self.spec_width)
             elif text == 'R':
                 self.filter = normed(gaussian(self.spec_width, 0.2, 0.44))
                 self.gauss_filter_pos = 0.44
