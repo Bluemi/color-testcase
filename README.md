@@ -10,7 +10,7 @@ The right side shows the resulting color from this spectrum.
 ### Changing the spectrum
 To change the spectrum just click on it and move the cursor around.
 
-There are also some predefined spectrum that can be set by pressing the following keys:
+There are also some predefined spectrums that can be set by pressing the following keys:
 - Number keys `1`, ..., `9`, `0`: Set a spectrum that is emitted by a [blackbody](https://en.wikipedia.org/wiki/Black-body_radiation) at temperature `key` * 1000K (10000K for key `0`).
 - `r`, `g`, `b`: Set a spectrum with color red, green or blue.
 - `c`, `m`, `y`, `k`: Set a spectrum with color cyan, magenta, yellow or black.
