@@ -55,7 +55,7 @@ class Main:
             normalized_color = (self.cs.spec_to_rgb(spec, normalize=True) * 255).astype(int)
             self.normalized_colors.append(pg.Color(normalized_color))
             color = (self.cs.spec_to_rgb(spec, normalize=False) * 255).astype(int)
-            color = np.minimum(color * 0.2, 255).astype(int)
+            color = np.minimum(color * 0.23, 255).astype(int)
             self.colors.append(color)
 
     def run(self):
