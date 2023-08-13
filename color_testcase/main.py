@@ -43,16 +43,20 @@ class Main:
         self.gauss_filter_pos = 0
         self.use_filter = False
         self.normalize_brightness = False
+        self.normalize_spec_brightness = True
 
         self.pressed = False
 
+        self.normalized_colors = []
         self.colors = []
         for i in range(self.spec_width):
             spec = np.zeros(self.spec_width)
             spec[i] = 1
-            color = (self.cs.spec_to_rgb(spec, normalize=True) * 255).astype(int)
-            # color = np.minimum(color / 8, 255)
-            self.colors.append(pg.Color(color))
+            normalized_color = (self.cs.spec_to_rgb(spec, normalize=True) * 255).astype(int)
+            self.normalized_colors.append(pg.Color(normalized_color))
+            color = (self.cs.spec_to_rgb(spec, normalize=False) * 255).astype(int)
+            color = np.minimum(color * 0.2, 255).astype(int)
+            self.colors.append(color)
 
     def run(self):
         self.render()
@@ -73,7 +77,8 @@ class Main:
         left_bin_xpos = PADDING_LEFT
         for i, spec_bin in enumerate(spec):
             right_bin_xpos = PADDING_LEFT + (i+1) / len(spec) * SPEC_WIDTH
-            color = pg.Color([int(c*color_factor) for c in self.colors[i]])
+            color = self.normalized_colors[i] if self.normalize_spec_brightness else self.colors[i]
+            color = pg.Color([int(c*color_factor) for c in color])
             bin_height = spec_bin * SPEC_HEIGHT
             bottom = DEFAULT_SCREEN_SIZE[1] - PADDING_TOP
             top = bottom - bin_height
@@ -149,8 +154,10 @@ class Main:
             text = event.text.strip()
             if text == 'f':
                 self.use_filter = not self.use_filter
-            if text == 'n':
+            elif text == 'n':
                 self.normalize_brightness = not self.normalize_brightness
+            elif text == 'N':
+                self.normalize_spec_brightness = not self.normalize_spec_brightness
             # modify spec
             elif text and text in '1234567890':
                 if text == '0':
