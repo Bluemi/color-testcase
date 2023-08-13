@@ -229,7 +229,10 @@ class Main:
             spec_index = min(spec_index, len(self.spec)-1)
             height = 1 - (mouse_pos[1] - PADDING_TOP) / SPEC_HEIGHT
             height = min(max(height, 0), 1)
-            self.spec[spec_index] = height
+            if pg.key.get_mods() & (pg.KMOD_SHIFT | pg.KMOD_LSHIFT):
+                self.filter[spec_index] = height
+            else:
+                self.spec[spec_index] = height
 
         self.update_needed = True
 
