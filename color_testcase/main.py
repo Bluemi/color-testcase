@@ -114,7 +114,6 @@ class Main:
             self.screen, pg.Color(255, 255, 255),
             pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50 + 60, 200 - WHITE_BORDER_SIZE, 60 + WHITE_BORDER_SIZE, 120 + 2 * WHITE_BORDER_SIZE)
         )
-        print('color:', pg.Color(color))
         pg.draw.rect(self.screen, pg.Color(color), pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50, 200, 120, 120))
 
         font = self.render_font.render(
