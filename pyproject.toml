@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "color-testcase"
+version = "0.1.0"
+description = "A small utility program in Python (pygame + numpy) to visualize the connection of spectrum and color."
+authors = ["Bluemi <bruno.schilling@protonmail.ch>"]
+license = "GPL-3.0-or-later"
+readme = "README.md"
+packages = [{include = "color_testcase"}]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+numpy = "^1.24.1"
+pygame = "^2.5.0"
+
+[tool.poetry.scripts]
+color-testcase = "color_testcase.main:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

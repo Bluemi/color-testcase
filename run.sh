@@ -5,6 +5,6 @@ case "$1" in
 		python3 color_testcase/black_bodies.py
 		;;
 	*)
-		python3 color_testcase/main.py
+		poetry run color_testcase/main.py
 		;;
 esac
