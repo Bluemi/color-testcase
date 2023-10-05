@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 
 
+import sys
 import numpy as np
 import pygame as pg
 
-from color_system import cs_srgb
-from black_bodies import planck
+from color_testcase.color_system import cs_srgb
+from color_testcase.black_bodies import planck
 
 
 DEFAULT_SCREEN_SIZE = (1000, 600)
@@ -66,11 +67,6 @@ class Main:
             events = events + pg.event.get()
             self.handle_events(events)
 
-            # render
-            if self.update_needed:
-                self.render()
-                self.update_needed = False
-
         pg.quit()
 
     def render_spec(self, spec, color_factor=1.0):
@@ -118,7 +114,8 @@ class Main:
             self.screen, pg.Color(255, 255, 255),
             pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50 + 60, 200 - WHITE_BORDER_SIZE, 60 + WHITE_BORDER_SIZE, 120 + 2 * WHITE_BORDER_SIZE)
         )
-        pg.draw.rect(self.screen, color, pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50, 200, 120, 120))
+        print('color:', pg.Color(color))
+        pg.draw.rect(self.screen, pg.Color(color), pg.Rect(SPEC_WIDTH + PADDING_LEFT + 50, 200, 120, 120))
 
         font = self.render_font.render(
             'RGB: ({}, {}, {})'.format(color[0], color[1], color[2]),
@@ -136,6 +133,10 @@ class Main:
     def handle_events(self, events):
         for event in events:
             self.handle_event(event)
+        # render
+        if self.update_needed:
+            self.render()
+            self.update_needed = False
 
     def handle_event(self, event):
         if event.type == pg.QUIT:
@@ -250,8 +251,12 @@ class Main:
 
 def main():
     main_instance = Main()
-    main_instance.run()
-    pg.quit()
+    if "pyodide" in sys.modules:
+        pg.event.register_event_callback(main_instance.handle_events)
+        return main_instance
+    else:
+        main_instance.run()
+        pg.quit()
 
 
 if __name__ == '__main__':

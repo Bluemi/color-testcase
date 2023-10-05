@@ -1,9 +1,5 @@
 import numpy as np
-from scipy.constants import h, c, k
-import matplotlib.pyplot as plt
-from matplotlib.patches import Circle
-
-from color_system import cs_hdtv
+from color_testcase.color_system import cs_hdtv
 
 
 def planck(lam, t):
@@ -13,6 +9,11 @@ def planck(lam, t):
     Returns the spectral radiance, B(lam, t), in W.sr-1.m-2 of a black body
     at temperature t (in K) at a wavelength lam (in nm), using Planck's law.
     """
+    # define constants h, c, k to get rid of scipy dependency.
+    # from scipy.constants import h, c, k
+    h = 6.62607015e-34
+    c = 299792458.0
+    k = 1.380649e-23
 
     lam_m = lam / 1.e9
     fac = h * c / lam_m / k / t
@@ -21,6 +22,9 @@ def planck(lam, t):
 
 
 def main():
+    import matplotlib.pyplot as plt
+    from matplotlib.patches import Circle
+
     cs = cs_hdtv
 
     fig, ax = plt.subplots()
