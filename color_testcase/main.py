@@ -87,7 +87,7 @@ class Main:
         self.screen.fill(pg.Color(0, 0, 0))
 
         # render spec
-        color_factor = 0.5 if self.use_filter else 1.0
+        color_factor = 0.3 if self.use_filter else 1.0
         self.render_spec(self.spec, color_factor)
 
         if self.use_filter:
